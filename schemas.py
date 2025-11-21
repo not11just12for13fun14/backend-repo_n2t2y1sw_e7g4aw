@@ -11,10 +11,10 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl, EmailStr
+from typing import Optional, List
 
-# Example schemas (replace with your own):
+# Example schemas (you can still use these elsewhere if needed):
 
 class User(BaseModel):
     """
@@ -22,7 +22,7 @@ class User(BaseModel):
     Collection name: "user" (lowercase of class name)
     """
     name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
+    email: EmailStr = Field(..., description="Email address")
     address: str = Field(..., description="Address")
     age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
     is_active: bool = Field(True, description="Whether user is active")
@@ -38,11 +38,33 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Candle business specific schemas
+class Candle(BaseModel):
+    """
+    Candle products
+    Collection name: "candle"
+    """
+    name: str = Field(..., description="Candle name")
+    scent: str = Field(..., description="Fragrance blend")
+    description: Optional[str] = Field(None, description="Marketing description")
+    price: float = Field(..., ge=0, description="Price in USD")
+    size_oz: float = Field(..., gt=0, description="Size in ounces")
+    burn_time_hours: Optional[int] = Field(None, ge=0, description="Estimated burn time in hours")
+    image_urls: List[HttpUrl] = Field(default_factory=list, description="Image gallery URLs")
+    in_stock: bool = Field(True, description="Inventory availability")
+    rating: Optional[float] = Field(None, ge=0, le=5, description="Average rating 0-5")
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Inquiry(BaseModel):
+    """Contact form submissions
+    Collection name: "inquiry"
+    """
+    name: str = Field(..., description="Sender name")
+    email: EmailStr = Field(..., description="Sender email")
+    message: str = Field(..., min_length=10, max_length=2000, description="Message body")
+
+class Subscriber(BaseModel):
+    """Newsletter subscribers
+    Collection name: "subscriber"
+    """
+    email: EmailStr = Field(..., description="Subscriber email")
+    source: Optional[str] = Field(None, description="Where subscription was made")
